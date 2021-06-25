@@ -1,49 +1,33 @@
-import React, {useState} from 'react';
-import TaskForm from './TaskForm';
-import Section from '../UI/Section'
+import React from "react";
+import TaskForm from "./TaskForm";
+import Section from "../UI/Section";
+import useHttpClient from "../hook/useHttpClient";
 
 const NewTask = (props) => {
+  const { error, isLoading, sendRequest: addNewTask } = useHttpClient();
 
-    const [error, setError] = useState(null)
-    const [isLoading, setIsLoading] = useState(false)
+  const addTaskResponseHandler = (taskText, response) => {
+    const addedTask = { id: response.name, name: taskText }; //name is auto-generated id firebase specific
+    props.onAddTask(addedTask);
+  };
 
-    const addTaskHandler = async function (taskText) {
-        setIsLoading(true)
-        setError(null)
-        try{
-            const response = await fetch(
-                'https://task-manager-73599-default-rtdb.firebaseio.com/task.json'
-                ,{
-                    method: 'POST',
-                    body: JSON.stringify({name : taskText}),
-                    headers: { 'Content-Type' : 'application/json'}
-                }
-                );
-
-            if(!response.ok){
-                throw new Error("Request Failed !!");
-            }
-            
-            const data = await response.json();
-
-            const addedTask = {id: data.name, name:taskText} //name is auto-generated id firebase specific
-            props.onAddTask(addedTask);
-            setIsLoading(false);
-
-        }catch(err){
-          setError(err.message || "Something went wrong !!");
-        }
-        setIsLoading(false);
+  const addTaskHandler = async (taskText) => {
+    const request = {
+      url: "https://task-manager-73599-default-rtdb.firebaseio.com/task.json",
+      method: 'POST',
+      body: { name: taskText },
+      headers: { "Content-Type": "application/json" },
     };
 
-    return(
-        <Section> 
-            <TaskForm onAddTask = {addTaskHandler} loading = {isLoading}/>
-            {error && <p>{error}</p>}
-        </Section>
-    );
+    addNewTask(request, addTaskResponseHandler.bind(null, taskText));
+  };
 
-
-}
+  return (
+    <Section>
+      <TaskForm onAddTask={addTaskHandler} loading={isLoading} />
+      {error && <p>{error}</p>}
+    </Section>
+  );
+};
 
 export default NewTask;

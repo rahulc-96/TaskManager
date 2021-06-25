@@ -25,7 +25,7 @@ const TaskForm = (props) => {
       </form>
       <div className={styles.warning}>
       {!props.loading && invalid && (
-        <p>Please enter valid task</p>
+        <p>Please enter a valid task</p>
       )}
       </div>
 
